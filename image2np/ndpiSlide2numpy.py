@@ -6,6 +6,14 @@ def get_ndpi_slide_region(slide,level):
     img = slide.read_region((0,0),level,(width,height)).convert("RGB")
     return np.array(img)
 
+def get_ndpi_slide_pyramidal_data(slide):
+    level_count = int(slide.properties.get('openslide.level-count'))
+    pyramidal_data = []
+    for i in range(level_count):
+        np_data = get_ndpi_slide_region(slide, i)
+        pyramidal_data.append(np_data)
+    return pyramidal_data
+
 def get_ndpi_slide_properties(slide):
     level_count = int(slide.properties.get('openslide.level-count'))
     leve_size = []
@@ -16,7 +24,7 @@ def get_ndpi_slide_properties(slide):
     unit = slide.properties.get('tiff.ResolutionUnit')
     resolution = [1000/x_resolution, 1000/y_resolution, unit]
     app_mag = float(slide.properties.get('openslide.objective-power'))
-    tile_size = 512 # 注意到ndpi的tile size 不是正方形，并且看到我们已有的svs的tile size一般是512*512，所以这里统一设置为512
+    tile_size = 256
     desc = f"Aperio Image Library v10.0.51\r\n{width}x{height} [0,100 {width}x{height}] ({tile_size}x{tile_size}) JPEG/RGB Q=30|AppMag = {app_mag}|MPP = {(x_resolution + y_resolution)/2}|OriginalWidth = {width}|Originalheight = {height}"
     for i in range(level_count):
         width = int(slide.properties.get(f'openslide.level[{i}].width'))
